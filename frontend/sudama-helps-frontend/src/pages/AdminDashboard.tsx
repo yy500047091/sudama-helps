@@ -51,7 +51,7 @@ export default function AdminDashboard() {
   const loadBookings = async () => {
     try {
       setLoading(true);
-      const data = await api.admin.getPendingBookings(page, 10);
+      const data = await api.admin.getAllBookings(page, 10);
       setBookings(data);
     } catch (error: any) {
       toast.error('Failed to load bookings');

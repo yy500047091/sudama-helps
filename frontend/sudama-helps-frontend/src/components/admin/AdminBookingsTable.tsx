@@ -82,16 +82,16 @@ export default function AdminBookingsTable({
                     ₹{booking.totalAmount?.toFixed(2) || '0.00'}
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    {booking.status === 'PENDING' ? (
+                    {['PENDING', 'ASSIGNED'].includes(booking.status) ? (
                       <button
                         onClick={() => onAssignClick(booking)}
                         className="text-emerald-600 hover:text-emerald-700 font-medium"
                       >
-                        Assign Provider
+                        {booking.status === 'PENDING' ? 'Assign Provider' : 'Re-assign'}
                       </button>
                     ) : (
                       <span className="text-gray-400">
-                        {booking.providerName || 'Unassigned'}
+                        {booking.providerName || 'N/A'}
                       </span>
                     )}
                   </td>
