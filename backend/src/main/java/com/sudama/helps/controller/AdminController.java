@@ -1,10 +1,12 @@
 package com.sudama.helps.controller;
 
+import com.sudama.helps.dto.request.BookingAssignmentRequest;
 import com.sudama.helps.dto.response.ApiResponse;
 import com.sudama.helps.dto.response.BookingResponse;
 import com.sudama.helps.dto.response.ServiceResponse;
 import com.sudama.helps.enums.BookingStatus;
 import com.sudama.helps.service.AdminService;
+import com.sudama.helps.service.BookingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -33,8 +35,13 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    public AdminController(AdminService adminService) {
+
+
+    private final BookingService bookingService;
+
+    public AdminController(AdminService adminService, BookingService bookingService) {
         this.adminService = adminService;
+        this.bookingService = bookingService;
     }
 
     /**
@@ -167,4 +174,18 @@ public class AdminController {
         
         return ResponseEntity.ok(ApiResponse.success(services, "Services retrieved successfully"));
     }
+
+
+
+
+    @PutMapping("/bookings/assign")
+    public ResponseEntity<BookingResponse> assignBooking(@RequestBody BookingAssignmentRequest request) {
+        BookingResponse response = bookingService.assignProviderManual(
+                request.getBookingId(),
+                request.getProviderId()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
 import { toast } from 'react-hot-toast';
+import { UserRole } from '@/types';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,8 +17,17 @@ export default function LoginPage() {
 
     try {
       await login({ email, password });
+      const user = useAuthStore.getState().user;
+      
       toast.success('Login successful!');
-      navigate('/dashboard');
+      
+      if (user?.role === UserRole.ADMIN) {
+        navigate('/admin/dashboard');
+      } else if (user?.role === UserRole.SERVICE_PROVIDER) {
+        navigate('/provider/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       toast.error('Login failed. Please check your credentials.');
     } finally {

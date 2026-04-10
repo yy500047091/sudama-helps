@@ -1,4 +1,4 @@
--- SUDAMA HELPS Database Schema
+ -- SUDAMA HELPS Database Schema
 -- MySQL 8.0+
 -- Optimized for high performance and scalability
 
