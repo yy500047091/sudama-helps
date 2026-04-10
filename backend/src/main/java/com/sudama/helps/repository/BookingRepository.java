@@ -103,6 +103,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long>, JpaSpec
     @EntityGraph(attributePaths = {"customer", "service"})
     Page<Booking> findByStatus(BookingStatus status, Pageable pageable);
 
+    // Bookings by status
+    
     // Count by status
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status AND b.isDeleted = false")
     long countByStatus(@Param("status") BookingStatus status);

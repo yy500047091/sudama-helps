@@ -9,6 +9,7 @@ import com.sudama.helps.entity.Service;
 import com.sudama.helps.entity.User;
 import com.sudama.helps.enums.BookingStatus;
 import com.sudama.helps.enums.PaymentStatus;
+import com.sudama.helps.enums.UserRole;
 import com.sudama.helps.exception.BusinessException;
 import com.sudama.helps.exception.ResourceNotFoundException;
 import com.sudama.helps.repository.BookingRepository;
@@ -27,6 +28,7 @@ import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Booking service with comprehensive business logic
@@ -231,5 +233,44 @@ public class BookingService {
                 booking.getCreatedAt(),
                 booking.getUpdatedAt()
         );
+    }
+
+
+
+    // 1. New method to get all pending bookings for the Admin
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getPendingBookings() {
+        return bookingRepository.findByStatus(BookingStatus.PENDING, PageRequest.of(0, 2000))
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    // 2. Enhanced assignment logic
+    @Transactional
+    @CacheEvict(value = "bookings", key = "#bookingId")
+    public BookingResponse assignProviderManual(Long bookingId, Long providerId) {
+        log.info("Admin manually assigning provider {} to booking {}", providerId, bookingId);
+
+        Booking booking = bookingRepository.findByIdWithDetails(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        User provider = userRepository.findById(providerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider not found"));
+
+        // Validation: Ensure the user being assigned is actually a Service Provider
+        if (!provider.getRole().equals(UserRole.SERVICE_PROVIDER)) {
+            throw new BusinessException("Selected user is not a registered Service Provider");
+        }
+
+        booking.setProvider(provider);
+        booking.setStatus(BookingStatus.CONFIRMED); // Move from PENDING to CONFIRMED/ASSIGNED
+
+        Booking savedBooking = bookingRepository.save(booking);
+
+        // Trigger real-time notification to the provider
+        notificationService.sendProviderAssignment(savedBooking);
+
+        return mapToResponse(savedBooking);
     }
 }
